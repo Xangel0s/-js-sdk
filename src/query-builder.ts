@@ -299,12 +299,17 @@ export class OzyBaseQueryBuilder<T extends Record<string, unknown> = Record<stri
     /**
      * Execute the query and return results
      */
-    async then<TResult = OzyBaseResponse<T[]>>(
-        resolve?: (value: OzyBaseResponse<T[]>) => TResult | PromiseLike<TResult>,
-        reject?: (reason: unknown) => TResult | PromiseLike<TResult>
-    ): Promise<TResult> {
-        const result = await this.execute();
-        return resolve ? resolve(result as OzyBaseResponse<T[]>) : result as unknown as TResult;
+    /**
+     * Promise compatibility (standard)
+     */
+    async then<TResult1 = OzyBaseResponse<T[]>, TResult2 = never>(
+        onfulfilled?: ((value: OzyBaseResponse<T[]>) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+        onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+    ): Promise<TResult1 | TResult2> {
+        return this.execute().then(
+            (res) => (onfulfilled ? onfulfilled(res as OzyBaseResponse<T[]>) : (res as any)),
+            onrejected
+        );
     }
 
     /**
